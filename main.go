@@ -109,12 +109,27 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
+func redirectHandler(store *URLStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		code := r.PathValue("code")
+
+		originalURL, ok := store.Get(code)
+		if !ok {
+			http.Error(w, "short URL not found", http.StatusNotFound)
+			return
+		}
+
+		http.Redirect(w, r, originalURL, http.StatusFound)
+	}
+}
+
 func main() {
 	store := NewURLStore()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", healthHandler)
-	mux.HandleFunc("/shorten", shortenHandler(store))
+	mux.HandleFunc("GET /health", healthHandler)
+	mux.HandleFunc("POST /shorten", shortenHandler(store))
+	mux.HandleFunc("GET /{code}", redirectHandler(store))
 
 	log.Println("Server jalan di :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
