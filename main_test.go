@@ -9,7 +9,7 @@ func TestIsValidURL(t *testing.T){
 	}
 
 	got = isValidURL(("bukan-url"))
-	if got != true {
+	if got != false {
 		t.Errorf("isValidURL(%q) = %v, mau %v", "bukan-url",got,false)
 	}
 }
