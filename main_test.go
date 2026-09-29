@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func TestisValidURL(t *testing.T){
+func TestIsValidURL(t *testing.T){
 	got := isValidURL("https://example.com")
 	if got != true {
 		t.Errorf("isValidURL(%q) = %v, mau %v","https://example.com",got,true)
