@@ -7,6 +7,8 @@ import (
 	"math/big"
 	"net/http"
 	"sync"
+	"net/url"
+	"strings"
 )
 
 // URL merepresentasikan satu record short URL.
@@ -67,6 +69,21 @@ type shortenResponse struct {
 	ShortURL string `json:"short_url"`
 }
 
+
+func isValidURL(raw string) bool {
+	u, err:= url.ParseRequestURI(raw)
+	if err != nil{
+		return false
+	}
+	if u.Scheme != "http" && u.Scheme != "https"{
+		return false
+	}
+	if u.Host == ""{
+		return false
+	}
+	return true
+}
+
 func shortenHandler(store *URLStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -83,6 +100,18 @@ func shortenHandler(store *URLStore) http.HandlerFunc {
 		// Validasi kosong dulu di sini, validasi format URL beneran nyusul hari ke-4.
 		if req.URL == "" {
 			http.Error(w, "url is required", http.StatusBadRequest)
+			return
+		}
+
+		req.URL = strings.TrimSpace(req.URL)
+
+		if req.URL == "" {
+			http.Error(w, "url is required", http.StatusBadRequest)
+			return
+		}
+
+		if !isValidURL(req.URL){
+			http.Error(w, "url must be a valid absolute URL (e.g. https://example.com)",http.StatusBadRequest)
 			return
 		}
 
@@ -122,6 +151,7 @@ func redirectHandler(store *URLStore) http.HandlerFunc {
 		http.Redirect(w, r, originalURL, http.StatusFound)
 	}
 }
+
 
 func main() {
 	store := NewURLStore()
