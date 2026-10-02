@@ -26,8 +26,8 @@ func TestGenerateShortCode(t *testing.T){
 		t.Fatalf("generateShortCode(%d) error: %v",length,err)
 	}
 	// cek panjang
-	if len(got) != length+1 {
-		t.Errorf("len(generateShortCode(%d)) = %d, want %d", length,len(got),length+1)
+	if len(got) != length {
+		t.Errorf("len(generateShortCode(%d)) = %d, want %d", length,len(got),length)
 	}
 	// cel tiap karakter ad di charset
 	for _, c:= range got {
