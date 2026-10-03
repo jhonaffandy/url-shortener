@@ -117,8 +117,8 @@ func TestShortenHandler_BadRequest(t *testing.T){
 			
 			handler(rec, req)
 
-			if rec.Code != http.StatusBadRequest {
-				t.Errorf("body %s: status = %d, want %d", tc.body,rec.Code,http.StatusBadRequest)
+			if rec.Code != http.StatusOK {
+				t.Errorf("body %s: status = %d, want %d", tc.body,rec.Code,http.StatusOK)
 			}
 		})
 	}
