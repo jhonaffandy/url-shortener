@@ -2,13 +2,16 @@ package main
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"math/big"
 	"net/http"
-	"sync"
 	"net/url"
 	"strings"
+	"sync"
+
+	_ "modernc.org/sqlite"
 )
 
 // URL merepresentasikan satu record short URL.
@@ -152,8 +155,44 @@ func redirectHandler(store *URLStore) http.HandlerFunc {
 	}
 }
 
+// Format: iniDB(path string) (*sql.DB, error)
+// path = lokasi file sqlite
+// return = koneksi db yang siap dipakai, atau error
+// Contoh: db, err := initDB("urls.db")
+func initDB(path string) (*sql.DB, error){
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		return nil, err
+	}
+	if err:= db.Ping(); err != nil {
+		return nil, err
+	}
+
+	// Format: db.Exec(query string, args ..anuy) (sql.Result, error)
+	// Dipakai untuk statement yang nggak balikin b aris (CREATE, INSERT, UPDATE, DELETE)
+	// Contoh: _, err := db.Exec("DELETE FROM urls WHERE code = ?", "abc123")
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS URLS (
+			code TEXT PRIMARY KEY,
+			original_url TEXT NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMPT
+		)
+	`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
 
 func main() {
+	db, err := initDB("urls.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	store := NewURLStore()
 
 	mux := http.NewServeMux()
