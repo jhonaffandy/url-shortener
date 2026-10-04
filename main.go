@@ -203,7 +203,7 @@ func initDB(path string) (*sql.DB, error){
 		CREATE TABLE IF NOT EXISTS URLS (
 			code TEXT PRIMARY KEY,
 			original_url TEXT NOT NULL,
-			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMPT
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 		)
 	`)
 
