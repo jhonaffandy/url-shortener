@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 
 	_ "modernc.org/sqlite"
 )
@@ -23,27 +22,49 @@ type URL struct {
 // store adalah "database" sementara kita, disimpan di memori.
 // mutex dipakai supaya aman diakses dari banyak goroutine/request sekaligus.
 type URLStore struct {
-	mu   sync.Mutex
-	data map[string]string // key: code, value: original URL
+	db *sql.DB
 }
 
-func NewURLStore() *URLStore {
+// Format: NewURLStore(db *sql.DB) *URLStore
+func NewURLStore(db *sql.DB) *URLStore {
 	return &URLStore{
-		data: make(map[string]string),
+		db: db,
 	}
 }
 
-func (s *URLStore) Save(code, url string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.data[code] = url
+// Format: (s *URLStore) Save(code, url string) error
+// Simpan 1 baris ke table urls. Return error kalau gagal (misal code duplikat)
+// Contoh: err := store.Save("abc123", "https://example.com")
+func (s *URLStore) Save(code, url string) error {
+	_, err := s.db.Exec(
+		"INSERT INTO URLS (code, original_url) VALUES (?,?)",
+		code, url,
+	)
+	return err
 }
 
-func (s *URLStore) Get(code string) (string, bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	url, ok := s.data[code]
-	return url, ok
+// Format: (s *URLStore) Get(code string) (string, bool, error)
+// Return: (url, ditemukan?, error)
+// - ketemu -> ("https://..", true, nill)
+// - nggak ketemu -> (("", false, nil)
+// - DB error -> ("", false, err)
+// Contoh: url, ok, err := store.Get("abc123") 
+func (s *URLStore) Get(code string) (string, bool, error) {
+	var url string
+
+	// Format: db.QueryRow(query string, args ...any) *aql.Row
+	// Format: row.Scan(dest ...any) error  -> isi variabel dari kolom hasil (pakai &)
+	err := s.db.QueryRow(
+		"SELECT original_url FROM urls WHERE code = ?", code,
+	).Scan(&url)
+
+	if err == sql.ErrNoRows{
+		return "", false, nil
+	}
+	if err != nil {
+		return "", false, err
+	}
+	return url, true, nil
 }
 
 // generateShortCode bikin string random alfanumerik sepanjang `length`.
@@ -124,7 +145,10 @@ func shortenHandler(store *URLStore) http.HandlerFunc {
 			return
 		}
 
-		store.Save(code, req.URL)
+		if err := store.Save(code, req.URL); err != nil {
+			http.Error(w,"failed to save url", http.StatusInternalServerError)
+			return
+		}
 
 		resp := shortenResponse{
 			Code:     code,
@@ -145,7 +169,11 @@ func redirectHandler(store *URLStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.PathValue("code")
 
-		originalURL, ok := store.Get(code)
+		originalURL, ok, err := store.Get(code)
+		if err != nil{
+			http.Error(w,"internal error", http.StatusInternalServerError)
+			return
+		}
 		if !ok {
 			http.Error(w, "short URL not found", http.StatusNotFound)
 			return
@@ -193,7 +221,7 @@ func main() {
 	}
 	defer db.Close()
 
-	store := NewURLStore()
+	store := NewURLStore(db)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", healthHandler)

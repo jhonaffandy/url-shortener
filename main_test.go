@@ -60,7 +60,11 @@ func TestGenerateShortCodeUnique(t *testing.T){
 // TestHortenHandler_Success: POST url valid -> 200 + code 6 karakter + tersimpan di store
 // Format: httptest.NewRequest(method, path string, body io.Reader)
 func TestShortenHandler_Success(t *testing.T){
-	store := NewURLStore()
+	db, err := initDB(":memory:") // ":memory:" = SQLite sementar di RAM, hilang pas test selesai
+	if err != nil {
+		t.Fatalf("initDB: %v", err)
+	}
+	store := NewURLStore(db)
 	handler := shortenHandler(store) // balikin http.HandlerFunc
 
 	body := strings.NewReader(`{"url":"https://example.com"}`)
@@ -85,7 +89,7 @@ func TestShortenHandler_Success(t *testing.T){
 	}
 
 	// cek tersimpan di store: Get(code) (string, bool)
-	original, ok := store.Get(resp.Code)
+	original, ok , err := store.Get(resp.Code)
 	if !ok{
 		t.Fatalf("code %q tidak ad di store", resp.Code)
 	}
@@ -111,7 +115,11 @@ func TestShortenHandler_BadRequest(t *testing.T){
 	for _,tc := range tests {
 		// t.Run(name string, func(t *testing.T)) -> subtest, muncul sendiri di output
 		t.Run(tc.name, func(t *testing.T){
-			handler := shortenHandler(NewURLStore())
+			db, err := initDB(":memory:") // ":memory:" = SQLite sementar di RAM, hilang pas test selesai
+			if err != nil {
+				t.Fatalf("initDB: %v", err)
+			}
+			handler := shortenHandler(NewURLStore(db))
 			req := httptest.NewRequest(http.MethodPost,"/shorten", strings.NewReader((tc.body)))
 			rec := httptest.NewRecorder()
 			
