@@ -55,7 +55,8 @@ func (s *URLStore) Get(code string) (string, bool, error) {
 	// Format: db.QueryRow(query string, args ...any) *aql.Row
 	// Format: row.Scan(dest ...any) error  -> isi variabel dari kolom hasil (pakai &)
 	err := s.db.QueryRow(
-		"SELECT original_url FROM urls WHERE code = ?", code,
+		"SELECT original_url FROM urls WHERE code = ? ",//AND (expires_at IS NULL OR expires_at > datetime('now'))", 
+		code,
 	).Scan(&url)
 
 	if err == sql.ErrNoRows{
