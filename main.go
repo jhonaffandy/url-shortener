@@ -55,7 +55,7 @@ func (s *URLStore) Get(code string) (string, bool, error) {
 	// Format: db.QueryRow(query string, args ...any) *aql.Row
 	// Format: row.Scan(dest ...any) error  -> isi variabel dari kolom hasil (pakai &)
 	err := s.db.QueryRow(
-		"SELECT original_url FROM urls WHERE code = ? ",//AND (expires_at IS NULL OR expires_at > datetime('now'))", 
+		"SELECT original_url FROM urls WHERE code = ? AND (expires_at IS NULL OR expires_at > datetime('now'))", 
 		code,
 	).Scan(&url)
 
@@ -172,6 +172,8 @@ func redirectHandler(store *URLStore) http.HandlerFunc {
 
 		originalURL, ok, err := store.Get(code)
 		if err != nil{
+			log.Println("errrr")
+			log.Printf("redirect Get error: %v", err)
 			http.Error(w,"internal error", http.StatusInternalServerError)
 			return
 		}
