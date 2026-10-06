@@ -178,6 +178,10 @@ func redirectHandler(store *URLStore) http.HandlerFunc {
 			http.Error(w, "short URL not found", http.StatusNotFound)
 			return
 		}
+		if err := store.IncrementClicks(code); err != nil {
+			// Format: log.Printf(format string, args ...any)
+			log.Printf("gagal increment clicks %s: %v", code, err)
+		}
 
 		http.Redirect(w, r, originalURL, http.StatusFound)
 	}
@@ -201,17 +205,30 @@ func initDB(path string) (*sql.DB, error){
 	// Contoh: _, err := db.Exec("DELETE FROM urls WHERE code = ?", "abc123")
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS URLS (
-			code TEXT PRIMARY KEY,
-			original_url TEXT NOT NULL,
-			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
+		code TEXT PRIMARY KEY,
+		original_url TEXT NOT NULL,
+		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		expires_at DATETIME,
+		clicks INTEGER NOT NULL DEFAULT 0
+	)`)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return db, nil
+}
+
+// Format: (s *URLStore) IncrementClicks(code string) error
+// - code = short code yang diklik
+// - return error kalau query gagal
+// Contoh: err := store.IncrementClicks("abc123")
+func (s *URLStore) IncrementClicks(code string) error {
+	_, err := s.db.Exec(
+		"UPDATE urls SET clicks = clicks + 1 WHERE code = ?",
+		code,
+	)
+	return err
 }
 
 func main() {
