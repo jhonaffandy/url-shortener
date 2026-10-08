@@ -234,6 +234,65 @@ func (s *URLStore) IncrementClicks(code string) error {
 	return err
 }
 
+// Format: type statsResponse struct { ... }
+// Field : Code, Clicks, CreatedAt, ExpiresAt
+// ExpiresAt pakai *string supaya NULL jadi null di JSON (bukan "")
+type statsResponse struct {
+	Code		string 	`json:"code"`
+	Clicks		int		`json:"clicks"`
+	CreatedAt	string	`json:"created_at"`
+	ExpiresAt	*string	`json:"expires_at"`
+}
+
+// Format: (s *URLStore) GetStats(code string) (*statsResponse, bool, error)
+// Param : code = short code
+// Return: (stats, ditemukan?, error)
+// - ketemu       -> (&statsResponse{...}, true, nil)
+// - nggak ketemu -> (nil, false, nil)
+// - DB error     -> (nil, false, err)
+// Contoh: st, ok, err := store.GetStats("abc123")
+func (s *URLStore) GetStats(code string) (*statsResponse, bool, error){
+	var st statsResponse
+	var expires sql.NullString
+
+	err := s.db.QueryRow(
+		"SELECT code, clicks, created_at, expires_at FROM urls WHERE code = ?",
+		code,
+	).Scan(&st.Code, &st.Clicks, &st.CreatedAt, &expires)
+
+	if err == sql.ErrNoRows {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+
+	if expires.Valid{
+		st.ExpiresAt = &expires.String
+	}
+	return &st, true, nil
+}
+
+func statsHandler(store *URLStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		code := r.PathValue("code")
+
+		st, ok, err := store.GetStats(code)
+		if err != nil {
+			log.Printf("stats error: %v",err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return 
+		}
+		if !ok {
+			http.Error(w, "short URL not found", http.StatusNotFound)
+			return
+		}
+
+		w.Header().Set("Content-Type","application/json")
+		json.NewEncoder(w).Encode(st)
+	}
+}
+
 func main() {
 	db, err := initDB("urls.db")
 	if err != nil {
@@ -247,6 +306,7 @@ func main() {
 	mux.HandleFunc("GET /health", healthHandler)
 	mux.HandleFunc("POST /shorten", shortenHandler(store))
 	mux.HandleFunc("GET /{code}", redirectHandler(store))
+	mux.HandleFunc("GET /stats/{code}", statsHandler(store))
 
 	log.Println("Server jalan di :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
