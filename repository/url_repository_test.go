@@ -1,19 +1,18 @@
-package main
+package repository
 
 import (
 	"testing"
-	"url-shortener/repository"
 )
 
 // Format: TestXxx(t *testing.T)
 // Skenario: link expried -> Get return ok=false
 func TestGet_Expired(t *testing.T){
-	db, err := repository.InitDB(":memory:")
+	db, err := InitDB(":memory:")
 	if err != nil {
 		t.Fatalf("iniDB: %v", err)
 	}
 	defer db.Close()
-	store := repository.NewURLStore(db)
+	store := NewURLStore(db)
 
 	// Format: db.Exec(query string, args ...any) (sql.Result, error)
 	_, err = db.Exec(
@@ -36,12 +35,12 @@ func TestGet_Expired(t *testing.T){
 // Format: TestXxx(t *testing.T)
 // Skenario: link belum expired -> Get return ok=true + URL asli
 func TestGet_NotExpired(t *testing.T) {
-	db, err := repository.InitDB(":memory:")
+	db, err := InitDB(":memory:")
 	if err != nil {
 		t.Fatalf("initDB: %v", err)
 	}
 	defer db.Close()
-	store := repository.NewURLStore(db)
+	store := NewURLStore(db)
 
 	_, err = db.Exec(
 		"INSERT INTO urls (code, original_url, expires_at) VALUES (?, ?, datetime('now', '+1 hour'))",
