@@ -1,14 +1,12 @@
 package main
 
 import (
-	"crypto/rand"
 	"database/sql"
 	"encoding/json"
 	"log"
-	"math/big"
 	"net/http"
-	"net/url"
 	"strings"
+	"url-shortener/service"
 
 	_ "modernc.org/sqlite"
 )
@@ -68,20 +66,6 @@ func (s *URLStore) Get(code string) (string, bool, error) {
 	return url, true, nil
 }
 
-// generateShortCode bikin string random alfanumerik sepanjang `length`.
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-func generateShortCode(length int) (string, error) {
-	code := make([]byte, length)
-	for i := range code {
-		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
-		if err != nil {
-			return "", err
-		}
-		code[i] = charset[n.Int64()]
-	}
-	return string(code), nil
-}
 
 // --- HTTP Handlers ---
 
@@ -95,19 +79,6 @@ type shortenResponse struct {
 }
 
 
-func isValidURL(raw string) bool {
-	u, err:= url.ParseRequestURI(raw)
-	if err != nil{
-		return false
-	}
-	if u.Scheme != "http" && u.Scheme != "https"{
-		return false
-	}
-	if u.Host == ""{
-		return false
-	}
-	return true
-}
 
 func shortenHandler(store *URLStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -135,12 +106,12 @@ func shortenHandler(store *URLStore) http.HandlerFunc {
 			return
 		}
 
-		if !isValidURL(req.URL){
+		if !service.IsValidURL(req.URL){
 			http.Error(w, "url must be a valid absolute URL (e.g. https://example.com)",http.StatusBadRequest)
 			return
 		}
 
-		code, err := generateShortCode(6)
+		code, err := service.GenerateShortCode(6)
 		if err != nil {
 			http.Error(w, "failed to generate code", http.StatusInternalServerError)
 			return
