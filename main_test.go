@@ -189,3 +189,61 @@ func TestGet_NotExpired(t *testing.T) {
 		t.Errorf("Get(%q) = %q, want %q", "masih1", got, "https://b.com")
 	}
 }
+
+// Format: TestXxx(t *testing.T)
+// Skenario: stats code ada -> 200 + clicks sesuai
+// Format: req.SetPathValue(name, value string)
+// Contoh: req.SetPathValue("code", "abc123")
+func TestStatsHandler_Found(t *testing.T) {
+	db, err := initDB(":memory:")
+	if err != nil {
+		t.Fatalf("initDB: %v", err)
+	}
+	defer db.Close()
+	store := NewURLStore(db)
+
+	if err := store.Save("abc123", "https://example.com"); err != nil {
+		t.Fatalf("Save: %v", err)
+	}
+	store.IncrementClicks("abc123")
+
+	req := httptest.NewRequest(http.MethodGet, "/stats/abc123", nil)
+	req.SetPathValue("code", "abc123")
+	rec := httptest.NewRecorder()
+
+	statsHandler(store)(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
+
+	var got statsResponse
+	if err := json.NewDecoder(rec.Body).Decode(&got); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if got.Clicks != 1 {
+		t.Errorf("clicks = %d, want %d", got.Clicks, 1)
+	}
+	if got.ExpiresAt != nil {
+		t.Errorf("expires_at = %v, want nil", got.ExpiresAt)
+	}
+}
+
+// Skenario: stats code nggak ada -> 404
+func TestStatsHandler_NotFound(t *testing.T) {
+	db, err := initDB(":memory:")
+	if err != nil {
+		t.Fatalf("initDB: %v", err)
+	}
+	defer db.Close()
+
+	req := httptest.NewRequest(http.MethodGet, "/stats/nggakada", nil)
+	req.SetPathValue("code", "nggakada")
+	rec := httptest.NewRecorder()
+
+	statsHandler(NewURLStore(db))(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusNotFound)
+	}
+}
