@@ -1,6 +1,10 @@
 package repository
 
-import "database/sql"
+import (
+	"database/sql"
+
+	_ "modernc.org/sqlite"
+)
 
 // store adalah "database" sementara kita, disimpan di memori.
 // mutex dipakai supaya aman diakses dari banyak goroutine/request sekaligus.
