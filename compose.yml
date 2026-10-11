@@ -17,6 +17,11 @@ services:
     volumes:
       - urls_data:/app/data
 
+  app2:
+    build: .
+    volumes:
+      - urls_data2:/app/data
+
   # Format: nginx:
   #   image: <nama image>
   #   port: ["<port host>:<port container>"]
@@ -31,3 +36,4 @@ services:
 
 volumes:
   urls_data:
+  urls_data2:
