@@ -15,5 +15,13 @@ services:
     volumes:
       - urls_data:/app/data
 
+  # Format: nginx:
+  #   image: <nama image>
+  #   port: ["<port host>:<port container>"]
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+
 volumes:
   urls_data:
