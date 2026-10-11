@@ -12,13 +12,27 @@ Project untuk mengubah valid url yg panjang menjadi code 6 character. sehingga l
 
 ## Prasyarat
 
+- Docker Desktop (include Docker Compose), atau
 - Go 1.27+
 
 ## Cara Jalanin
 
+### Pakai Docker (disarankan)
+
 ```bash
 git clone <url-repo>
 cd url-shortener
+docker compose up -d --build
+```
+
+Server jalan di http://localhost:8080
+
+### Tanpa Docker
+
+```bash
+git clone <url-repo>
+cd url-shortener
+mkdir -p data
 go run .
 ```
 
@@ -64,3 +78,12 @@ Response 200: `{"status":"ok"}`
 ```bash
 go test ./...
 ```
+
+## Stop & Data
+
+```bash
+docker compose down      # stop, data tetap ada
+docker compose down -v   # stop + HAPUS data (volume)
+```
+
+SQLite disimpan di named volume `urls_data` (`/app/data/urls.db`).
