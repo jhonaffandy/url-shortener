@@ -24,7 +24,7 @@ go run .
 
 ## API
 
-### POST /shorten
+### `POST /shorten`
 
 Request:
 
@@ -38,7 +38,11 @@ Response 200:
 { "code": "qWEwtj", "short_url": "http://localhost:8080/qWEwtj" }
 ```
 
-### GET /stats/{code}
+### `GET /{code}`
+
+Redirect 302 ke URL asli. 404 kalau code nggak ada atau sudah expired.
+
+### `GET /stats/{code}`
 
 Response 200:
 
@@ -50,6 +54,10 @@ Response 200:
   "expires_at": null
 }
 ```
+
+### `GET /health`
+
+Response 200: `{"status":"ok"}`
 
 ## Test
 
