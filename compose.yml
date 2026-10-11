@@ -22,6 +22,10 @@ services:
     image: nginx:alpine
     ports:
       - "80:80"
+    # Format: - <path file di host>:<path di container>:ro
+    # ro = read-only, nginx cuma baca config
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
 volumes:
   urls_data:
