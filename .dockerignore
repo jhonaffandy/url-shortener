@@ -1,0 +1,4 @@
+# 1 pola per baris, relatif ke root konteks build
+
+urls.db
+.git
