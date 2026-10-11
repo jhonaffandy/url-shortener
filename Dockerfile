@@ -21,5 +21,8 @@ RUN go build -o url-shortener .
 # EXPOSE <port> -> dokumentasi doang, belum buka port ke host
 EXPOSE 8080
 
+# RUN mkdir -p <path>  -> bikin folder (-p = nggak error kalau udah ada)
+RUN mkdir -p /app/data
+
 # CMD ["executable","arg1", ...] -> jalan saat CONTAINER start
 CMD ["./url-shortener"]

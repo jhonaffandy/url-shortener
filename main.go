@@ -15,9 +15,10 @@ type URL struct {
 
 
 
-
+// sebelum: initDB("urls.db")
+// sesudah: initDB("data/urls.db")
 func main() {
-	db, err := repository.InitDB("urls.db")
+	db, err := repository.InitDB("data/urls.db")
 	if err != nil {
 		log.Fatal(err)
 	}

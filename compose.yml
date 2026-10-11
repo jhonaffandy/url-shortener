@@ -1,0 +1,19 @@
+# services:
+#   <nama sercie>:
+#     build: <path konteks  build>
+#     ports: ["<port host>:<port di container>"]
+#     volume: ["<nama volume>:<path di container>"]
+#
+# volumes:
+#   <nama volume>:    -> deklarasi named volume
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - urls_data:/app/data
+
+volumes:
+  urls_data:
