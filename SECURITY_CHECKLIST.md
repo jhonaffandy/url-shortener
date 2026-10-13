@@ -10,7 +10,7 @@
       Catatan: tes login di terminal BARU sebelum tutup sesi lama
 
 ## B. Firewall (Minggu 7 H1-2)
-- [ ] UFW aktif, default deny incoming, allow 22/80/443 + ICMP
+- [ ] UFW aktif, default deny incoming, allow 22/80/443 saja
       Cek: `sudo ufw status verbose`
 - [ ] Docker bypass UFW. Cuma nginx yang boleh `ports:` (80/443)
       Service lain: tanpa `ports:` atau `127.0.0.1:port:port`
