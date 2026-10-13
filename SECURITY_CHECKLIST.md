@@ -10,18 +10,18 @@
       Catatan: tes login di terminal BARU sebelum tutup sesi lama
 
 ## B. Firewall (Minggu 7 H1-2)
-- [ ] UFW aktif, default deny incoming, allow 22/80/443 saja
+- [ ] UFW aktif, default deny incoming, allow 22/80/443 + ICMP
       Cek: `sudo ufw status verbose`
-- [ ] Docker b ypass UFW. Cuma nginx yang boleh `ports:` (80/443)
+- [ ] Docker bypass UFW. Cuma nginx yang boleh `ports:` (80/443)
       Service lain: tanpa `ports:` atau `127.0.0.1:port:port`
       Cek: `sudo ss -ltnp` -> cuma 22/80/443 di 0.0.0.0
-- [ ] Firewall panel provider (MantaHost): allow 22, 80, 443 saja
-      Cek: panel -> Servers -> Firewall -> harus ada 3 rule TCP + ICMP
+- [x] Firewall panel provider (MantaHost): allow 22, 80, 443 + ICMP
+      Cek: panel -> Servers -> Firewall -> harus ada 4 rule aktif (TCP 22/80/443 + ICMP)
       Catatan: ada 2 lapis firewall (panel + UFW), dua-duanya harus allow
 
 ## C. Secret & git (Minggu 7 H3)
 - [ ] `.env` masuk `.gitignore`, `.env.example` di-commit
-      Cek: `git check=ignore -v .env`
+      Cek: `git check-ignore -v .env`
 - [ ] Nggak ada secret di git history
       Cek: `git log --all --full-history -- .env` -> kosong
 - [ ] Jangan hardcode password di compose.yml, pakai `.env`
