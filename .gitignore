@@ -1,2 +1,3 @@
 url-shortener
 urls.db
+.env
