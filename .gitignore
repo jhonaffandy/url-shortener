@@ -1,3 +1,4 @@
 url-shortener
 urls.db
 .env
+certbot/
