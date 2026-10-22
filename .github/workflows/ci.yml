@@ -1,0 +1,27 @@
+# Format: name: <nama workflow, tampil di tab Actions>
+name: CI
+
+# Format: on: <event pemicu>: branches: [<nama branch>]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Format: <nama-job>: (bebas, ini nama "test")
+  test:
+    # Mesin yang dipakai Github buat jalanin job
+    runs-on: ubunt-latest
+    steps:
+      # Format: -uses: <owner>/<action>@<versi> -> pakai action jadi orang lain
+      # Ambil kode repo ke mesin tadi
+      - uses: actions/checkout@v4
+
+      # Install Go; versi dibaca dari go.mod lo (nggak perlu nebak versi)
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # Format: - run: <command shell biasa>
+      - run: go test ./... -v
