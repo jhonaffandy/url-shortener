@@ -59,5 +59,15 @@ jobs:
           ssh-keyscan -H ${{  secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       # Format ssh: ssh <user>@<host> "<command di VPS>"
-      - name: Tes koneksi
-        run: ssh ${{  secrets.VPS_USER }}@${{  secrets.VPS_HOST }} "hostname && whoami"
+      # - name: Tes koneksi
+      # run: ssh ${{  secrets.VPS_USER }}@${{  secrets.VPS_HOST }} "hostname && whoami"
+
+      # Format: ssh <user>@<host> "cmd1 && cmd2 && cmd3"
+      # && = cmd berikutnya jalan HANYA kalau sebelumnya sukses
+      # cd ~/url-shortener = masuk folder project di VPS
+      # git pull origin main = tarik commit terbaru
+      # docker compose up -d --build = rebuild image + restart container
+      - name: Deploy
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cd ~/url-shortener && git pull origin main && docker compose up -d --build"
