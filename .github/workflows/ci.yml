@@ -39,4 +39,4 @@ jobs:
         # Format: docker build -t <nama>:<tag> <path-folder-Dockerfile>
         # -t = kasih nama + tag ke image
         # . = folder Dockerfile (root repo)
-        run: docker build -t url-shorener:ci .
+        run: docker build -t url-shortener:ci .
