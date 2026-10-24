@@ -25,3 +25,18 @@ jobs:
 
       # Format: - run: <command shell biasa>
       - run: go test ./... -v
+  build:
+    # Format: needs: <nama-job-lain>
+    # build cuma jalan kalo job 'test' hijau
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      # Format: uses: <owner>/<action>@<versi>
+      # ambil kode repo ke runner
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        # Format: docker build -t <nama>:<tag> <path-folder-Dockerfile>
+        # -t = kasih nama + tag ke image
+        # . = folder Dockerfile (root repo)
+        run: docker build -t url-shorener:ci .
