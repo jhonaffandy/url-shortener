@@ -40,3 +40,24 @@ jobs:
         # -t = kasih nama + tag ke image
         # . = folder Dockerfile (root repo)
         run: docker build -t url-shortener:ci .
+  # Format job: nama_job: {needs, if, runs-on, steps}
+  # needs   = nunggu job ini sukses dulu: [job1,job2]
+  # if      = konidsi jalan. Di sini: cuma push ke main (bukan PR)
+  deploy:
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      # Format step: -name: <label>
+      #               run: <command shell>
+      # ${{  secrets.NAMA }} = ambil nilai dari GitHub Secrets
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{  secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      # Format ssh: ssh <user>@<host> "<command di VPS>"
+      - name: Tes koneksi
+        run: ssh ${{  secrets.VPS_USER }}@${{  secrets.VPS_HOST }} "hostname && whoami"
