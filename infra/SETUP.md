@@ -1,6 +1,6 @@
 # Setup VPS dari Kosong sampai Live
 
-## 1. Akses awa;
+## 1. Akses awal
 ```bash
 # Format: ssh root@<ip-vps>
 ssh root@<IP>
@@ -43,4 +43,4 @@ sudo ufw enable
 sudo ufw status verbose
 ```
 
-Catatan: Docker bypass UFW untuk port yang di-publish. Cuma nginx yang boleh pakai `prts:` publik.
+Catatan: Docker bypass UFW untuk port yang di-publish. Cuma nginx yang boleh pakai `ports:` publik.
