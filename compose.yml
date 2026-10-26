@@ -10,6 +10,7 @@
 services:
   app:
     build: .
+    restart: unless-stopped
     expose:
       - "8080"
     # ports:
@@ -19,6 +20,7 @@ services:
 
   app2:
     build: .
+    restart: unless-stopped
     volumes:
       - urls_data2:/app/data
 
@@ -27,6 +29,7 @@ services:
   #   port: ["<port host>:<port container>"]
   nginx:
     image: nginx:alpine
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
