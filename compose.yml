@@ -39,7 +39,20 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./certbot/www:/var/www/certbot:ro # folder challenge (Certbot nulis, Nginx baca)
       - ./certbot/conf:/etc/letsencrypt:ro # rempat cert (Certbot nulis, Nginx baca)
+    # Format: networks: [<nama network>, ...]
+    # default = network bawaan compose ini (biar nginx tetap nyambung ke app & app2)
+    # proxy   = network bersama (nanti nyambung ke n8n)
+    networks: # <-- TAMBAH
+      - default # <-- TAMBAH
+      - proxy # <-- TAMBAH
 
 volumes:
   urls_data:
   urls_data2:
+
+# Format: networks:
+#   <nama>:
+#     external: true   -> network sudah ada di Docker, compose cuma "numpang", nggak bikin/hapus
+networks: # <-- TAMBAH (blok baru di paling bawah)
+  proxy:
+    external: true
